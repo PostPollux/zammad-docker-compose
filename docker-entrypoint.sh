@@ -18,16 +18,15 @@ if [ "$1" = 'zammad' ]; then
     if [ $? -ne 1 ]; then
 	echo "updating zammad..."
 	rake db:migrate
-	rake searchindex:rebuild
     else
 	echo "initializing zammad..."
 	rake db:create
 	rake db:migrate
 	rake db:seed
-	rake assets:precompile
 	rails r "Setting.set('es_url', 'http://elasticsearch:9200')"
-	rake searchindex:rebuild
     fi
+    rake assets:precompile
+    rake searchindex:rebuild
 
     # delte logs & pids
     rm ${ZAMMAD_DIR}/log/*
