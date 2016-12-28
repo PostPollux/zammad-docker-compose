@@ -3,11 +3,8 @@
 ZAMMAD_DIR="/home/zammad"
 GIT_URL="https://github.com/zammad/zammad.git"
 GIT_BRANCH="stable"
-#GIT_URL="https://github.com/monotek/zammad.git"
-#GIT_BRANCH="unicorn"
 RAILS_SERVER="puma"
 RAILS_ENV="production"
-FRESH_INSTALL="no"
 DEBUG="no"
 
 if [ "$1" = 'zammad' ]; then
@@ -16,28 +13,16 @@ if [ "$1" = 'zammad' ]; then
 
     shopt -s dotglob
 
-    if [ "${FRESH_INSTALL}" == "yes" ]; then
-	echo "fresh install requested. deleting everything in ${ZAMMAD_DIR}"
-	rm -rf ${ZAMMAD_DIR}/*
-    fi
-
-    # get zammad
-    if [ -f ${ZAMMAD_DIR}/config/database.yml ]; then
+    # check for existing database, else install
+    sed -e 's#.*username:.*#  username: postgres#g' -e 's#.*password:.*#  password: \n  host: postgresql\n#g' < config/database.yml.pkgr > config/database.yml
+    cd ${ZAMMAD_DIR}
+    rake db:migrate
+    if [ $? -ne 1 ]; then
 	echo "updating zammad..."
-	cd ${ZAMMAD_DIR}
-	git pull
-	bundle update
 	rake db:migrate
+	rake searchindex:rebuild
     else
-	echo "installing zammad..."
-	cd /tmp
-	git clone ${GIT_URL}
-	mv -f /tmp/zammad/* ${ZAMMAD_DIR}/
-	cd ${ZAMMAD_DIR}
-	git checkout ${GIT_BRANCH}
-	bundle install --without test development
-	sed -e 's#.*username:.*#  username: postgres#g' -e 's#.*password:.*#  password: \n  host: postgresql\n#g' < config/database.yml.pkgr > config/database.yml
-	rake db:drop
+	echo "initializing zammad..."
 	rake db:create
 	rake db:migrate
 	rake db:seed

@@ -1,38 +1,46 @@
 version: '2'
 services:
+  zammad:
+    image: 1drop/zammad:zammad
+    stdin_open: true
+    volumes:
+    - data-zammad:/home/zammad/public
+    tty: true
+    links:
+    - postgresql:postgresql
+    - elasticsearch:elasticsearch
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: host=git.1drop.de
   postgresql:
     image: postgres
-  elasticsearch:
-    build:
-      context: .
-      dockerfile: Dockerfile.elasticsearch
-  zammad:
-    build:
-      context: .
-      dockerfile: Dockerfile.zammad
-    links:
-      - postgresql
-      - elasticsearch
-    depends_on:
-      - postgresql
-      - elasticsearch
+    stdin_open: true
     volumes:
-      - data-zammad:/home/zammad
-      - data-ruby:/usr/local
+    - /opt/zammad/pgsql:/var/lib/postgresql/data
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: host=git.1drop.de
   nginx:
-    build:
-      context: .
-      dockerfile: Dockerfile.nginx
-    ports:
-      - "80:80"
-    links:
-      - zammad
-    depends_on:
-      - zammad
+    image: 1drop/zammad:nginx
+    stdin_open: true
     volumes:
       - data-zammad:/home/zammad
+    # ports:
+    #   - "80:80"
+    tty: true
+    links:
+    - zammad:zammad
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: host=git.1drop.de
+  elasticsearch:
+    image: 1drop/zammad:elasticsearch
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: host=git.1drop.de
 volumes:
   data-zammad:
-    driver: local
-  data-ruby:
     driver: local
