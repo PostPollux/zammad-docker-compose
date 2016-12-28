@@ -4,7 +4,7 @@ services:
     image: 1drop/zammad:zammad
     stdin_open: true
     volumes:
-    - data-zammad:/home/zammad/public
+    - data-zammad:/home/zammad
     tty: true
     links:
     - postgresql:postgresql
@@ -26,8 +26,6 @@ services:
     stdin_open: true
     volumes:
       - data-zammad:/home/zammad
-    # ports:
-    #   - "80:80"
     tty: true
     links:
     - zammad:zammad
