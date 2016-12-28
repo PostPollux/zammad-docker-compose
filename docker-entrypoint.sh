@@ -11,8 +11,6 @@ if [ "$1" = 'zammad' ]; then
 
     export RAILS_ENV=${RAILS_ENV}
 
-    shopt -s dotglob
-
     # check for existing database, else install
     sed -e 's#.*username:.*#  username: postgres#g' -e 's#.*password:.*#  password: \n  host: postgresql\n#g' < config/database.yml.pkgr > config/database.yml
     cd ${ZAMMAD_DIR}
