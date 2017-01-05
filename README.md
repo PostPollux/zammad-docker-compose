@@ -11,8 +11,15 @@ You're going to love Zammad!
 What is zammad-docker-compose repo for?
 ----------------------------------------
 
-This repo is meant to be the starting point for somebody who likes to test zammad.
-If you like to run zammad in production you should use one of the DEB or RPM packages.
+If you want to use Zammad in production with docker, you need an environment with all desired services that keep their data persistent.
+In contrast to monotek/zammad-docker-compose or the zammad/zammad images, this environment is built in a way that it keeps your data persistent when you update the zammad container from a new image (as it's expected to be done with docker). The monotek/zammad-docker-compose follows the intention, that you never drop, update, remove or replace the running zammad container, as it would delete the database config which is used as a trigger to reinstall zammad => that zammad container will drop your database if you touch the container and not just restart it.
+
+To detect if zammad is connected to a already seeded database, I use the error handling of `rake db:migrate` which will return an exit code 1 if the database is not yet seeded.
+
+Data persistence
+-------------------------
+
+I personally prefer mounting storage paths of containers to the local disk instead of using named volumes, but feel free to change that in the `docker-compose.yml`.
 
 Getting started with zammad-docker-compose
 ------------------------------------------
