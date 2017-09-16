@@ -1,49 +1,109 @@
-version: '2'
+version: '3'
 services:
+
   zammad:
-    image: 1drop/zammad:zammad
-    stdin_open: true
-    volumes:
-    - data-zammad:/home/zammad
-    tty: true
-    links:
-    - postgresql:postgresql
-    - elasticsearch:elasticsearch
-    depends_on: 
-    - postgresql
-    - elasticsearch
-    labels:
-      io.rancher.container.pull_image: always
-      io.rancher.scheduler.affinity:host_label: host=git.1drop.de
-  postgresql:
-    image: postgres
-    stdin_open: true
-    volumes:
-    - /opt/zammad/pgsql:/var/lib/postgresql/data
-    tty: true
-    labels:
-      io.rancher.container.pull_image: always
-      io.rancher.scheduler.affinity:host_label: host=git.1drop.de
-  nginx:
-    image: 1drop/zammad:nginx
-    stdin_open: true
+    image: 1drop/zammad:zammad-211
     volumes:
       - data-zammad:/home/zammad
-    depends_on: 
-    - zammad
-    tty: true
-    links:
-    - zammad:zammad
+    depends_on:
+      - zammad-postgresql
+      - zammad-elasticsearch
     labels:
       io.rancher.container.pull_image: always
-      io.rancher.scheduler.affinity:host_label: host=git.1drop.de
-  elasticsearch:
+      io.rancher.container.start_once: 'true'
+    restart: on-failure
+
+  zammad-railsserver:
+    image: 1drop/zammad:zammad-211
+    volumes:
+      - data-zammad:/home/zammad
+    depends_on:
+      - zammad
+      - zammad-elasticsearch
+      - zammad-postgresql
+    labels:
+      io.rancher.container.pull_image: always
+    restart: always
+    command: ["zammad-railsserver"]
+
+  zammad-scheduler:
+    image: 1drop/zammad:zammad-211
+    volumes:
+      - data-zammad:/home/zammad
+    depends_on:
+      - zammad
+      - zammad-elasticsearch
+      - zammad-postgresql
+    labels:
+      io.rancher.container.pull_image: always
+    restart: always
+    command: ["zammad-scheduler"]
+
+  zammad-websocket:
+    image: 1drop/zammad:zammad-211
+    volumes:
+      - data-zammad:/home/zammad
+    depends_on:
+      - zammad
+      - zammad-elasticsearch
+      - zammad-postgresql
+    labels:
+      io.rancher.container.pull_image: always
+    restart: always
+    command: ["zammad-websocket"]
+
+  zammad-backup:
+    image: 1drop/zammad:zammad-211
+    volumes:
+      - data-zammad:/home/zammad
+      - backup-zammad:/var/tmp/zammad
+    depends_on:
+      - zammad
+      - zammad-elasticsearch
+      - zammad-postgresql
+    labels:
+      io.rancher.container.pull_image: always
+    restart: always
+    command: ["zammad-backup"]
+
+  zammad-nginx:
+    image: 1drop/zammad:nginx
+    volumes:
+      - data-zammad:/home/zammad
+    environment:
+      - VIRTUAL_HOST=zammad.docker
+    depends_on:
+      - zammad-railsserver
+      - zammad-websocket
+    labels:
+      io.rancher.container.pull_image: always
+
+  zammad-postgresql:
+    image: postgres:9.6
+    volumes:
+      - data-postgres:/var/lib/postgres/data
+    labels:
+      io.rancher.container.pull_image: always
+
+  zammad-elasticsearch:
     image: 1drop/zammad:elasticsearch
-    stdin_open: true
-    tty: true
+    restart: always
+    volumes:
+      - data-elasticsearch:/usr/share/elasticsearch/data
     labels:
       io.rancher.container.pull_image: always
-      io.rancher.scheduler.affinity:host_label: host=git.1drop.de
+
+
 volumes:
+
   data-zammad:
+    driver: local
+
+  data-elasticsearch:
+    driver: local
+
+  backup-zammad:
+    driver: local
+
+  data-postgres:
     driver: local
