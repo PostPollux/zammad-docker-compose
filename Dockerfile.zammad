@@ -60,6 +60,5 @@ RUN BUILD_DEPENDENCIES="git build-essential libffi-dev libpq5 libpq-dev rsync" \
 COPY docker-entrypoint.sh /
 RUN chown ${ZAMMAD_USER}:${ZAMMAD_USER} /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
 WORKDIR ${ZAMMAD_DIR}
-USER $ZAMMAD_USER
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["zammad-railsserver"]

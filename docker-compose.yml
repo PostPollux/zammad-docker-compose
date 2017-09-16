@@ -73,13 +73,17 @@ services:
     environment:
       - VIRTUAL_HOST=zammad.docker
     depends_on:
+      - zammad
+    links:
       - zammad-railsserver
       - zammad-websocket
+    restart: always
     labels:
       io.rancher.container.pull_image: always
 
   zammad-postgresql:
     image: postgres:9.6
+    restart: always
     volumes:
       - data-postgres:/var/lib/postgres/data
     labels:
