@@ -1,24 +1,11 @@
 version: '3'
 services:
 
-  zammad:
-    image: 1drop/zammad:zammad-211
-    volumes:
-      - data-zammad:/home/zammad
-    depends_on:
-      - zammad-postgresql
-      - zammad-elasticsearch
-    labels:
-      io.rancher.container.pull_image: always
-      io.rancher.container.start_once: 'true'
-    restart: on-failure
-
   zammad-railsserver:
     image: 1drop/zammad:zammad-211
     volumes:
       - data-zammad:/home/zammad
     depends_on:
-      - zammad
       - zammad-elasticsearch
       - zammad-postgresql
     labels:
@@ -44,7 +31,6 @@ services:
     volumes:
       - data-zammad:/home/zammad
     depends_on:
-      - zammad
       - zammad-elasticsearch
       - zammad-postgresql
     labels:
@@ -52,28 +38,12 @@ services:
     restart: always
     command: ["zammad-websocket"]
 
-  zammad-backup:
-    image: 1drop/zammad:zammad-211
-    volumes:
-      - data-zammad:/home/zammad
-      - backup-zammad:/var/tmp/zammad
-    depends_on:
-      - zammad
-      - zammad-elasticsearch
-      - zammad-postgresql
-    labels:
-      io.rancher.container.pull_image: always
-    restart: always
-    command: ["zammad-backup"]
-
   zammad-nginx:
     image: 1drop/zammad:nginx
     volumes:
       - data-zammad:/home/zammad
     environment:
       - VIRTUAL_HOST=zammad.docker
-    depends_on:
-      - zammad
     links:
       - zammad-railsserver
       - zammad-websocket
@@ -104,9 +74,6 @@ volumes:
     driver: local
 
   data-elasticsearch:
-    driver: local
-
-  backup-zammad:
     driver: local
 
   data-postgres:
