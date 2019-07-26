@@ -2,7 +2,7 @@ version: '3'
 services:
 
   zammad-railsserver:
-    image: 1drop/zammad:zammad-211
+    image: postpollux/zammad:3.0
     volumes:
       - data-zammad:/home/zammad
     depends_on:
@@ -14,11 +14,10 @@ services:
     command: ["zammad-railsserver"]
 
   zammad-scheduler:
-    image: 1drop/zammad:zammad-211
+    image: postpollux/zammad:3.0
     volumes:
       - data-zammad:/home/zammad
     depends_on:
-      - zammad
       - zammad-elasticsearch
       - zammad-postgresql
     labels:
@@ -27,7 +26,7 @@ services:
     command: ["zammad-scheduler"]
 
   zammad-websocket:
-    image: 1drop/zammad:zammad-211
+    image: postpollux/zammad:3.0
     volumes:
       - data-zammad:/home/zammad
     depends_on:
@@ -39,7 +38,7 @@ services:
     command: ["zammad-websocket"]
 
   zammad-nginx:
-    image: 1drop/zammad:nginx
+    image: postpollux/zammad-nginx
     volumes:
       - data-zammad:/home/zammad
     environment:
@@ -48,11 +47,13 @@ services:
       - zammad-railsserver
       - zammad-websocket
     restart: always
+    ports:
+      - 8666:80
     labels:
       io.rancher.container.pull_image: always
 
   zammad-postgresql:
-    image: postgres:9.6
+    image: postgres:11.4
     restart: always
     volumes:
       - data-postgres:/var/lib/postgres/data
@@ -60,7 +61,7 @@ services:
       io.rancher.container.pull_image: always
 
   zammad-elasticsearch:
-    image: 1drop/zammad:elasticsearch
+    image: postpollux/zammad-elasticsearch:5.5
     restart: always
     volumes:
       - data-elasticsearch:/usr/share/elasticsearch/data
